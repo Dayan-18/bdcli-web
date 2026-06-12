@@ -644,6 +644,27 @@
         </div>
       </section>
 
+      <section class="section" id="admin-access">
+        <div class="section-header">
+          <div>
+            <h2>Acceso admin</h2>
+            <p>Este acceso abre el panel privado de descargas. Si no tienes la clave, el panel seguirá oculto.</p>
+          </div>
+        </div>
+
+        <div class="admin-entry">
+          <div>
+            <label for="adminKey" style="display:block; margin-bottom:8px; color:var(--muted); font-weight:700;">Clave admin</label>
+            <input id="adminKey" type="password" placeholder="Ingresa la clave para ver el panel" autocomplete="off" />
+          </div>
+          <button class="btn btn-ghost" id="unlockAdminBtn" type="button">Mostrar panel</button>
+        </div>
+
+        <div class="notice">
+          Clave por defecto: <strong>upt-admin</strong>. Si definiste <strong>DBADMIN_ADMIN_KEY</strong> en Render, usa esa.
+        </div>
+      </section>
+
       <section class="section hidden" id="admin">
         <div class="section-header">
           <div>
@@ -653,15 +674,7 @@
         </div>
 
         <div class="notice">
-          Este panel está oculto para visitantes. Ingresa la clave de administrador para verlo.
-        </div>
-
-        <div class="admin-entry">
-          <div>
-            <label for="adminKey" style="display:block; margin-bottom:8px; color:var(--muted); font-weight:700;">Clave admin</label>
-            <input id="adminKey" type="password" placeholder="Ingresa la clave para ver el panel" autocomplete="off" />
-          </div>
-          <button class="btn btn-ghost" id="unlockAdminBtn" type="button">Mostrar panel</button>
+          Este panel está oculto para visitantes. Solo se muestra cuando la clave es correcta.
         </div>
 
         <div class="admin-box">
@@ -754,6 +767,7 @@
           adminSummary.textContent = 'Clave incorrecta. El panel sigue oculto.';
           downloadsTable.innerHTML = '<tr><td class="muted" colspan="4">Acceso denegado.</td></tr>';
           adminSection.classList.add('hidden');
+          adminSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           return;
         }
         const data = await response.json();
@@ -762,6 +776,7 @@
         adminSummary.textContent = `${total} descarga(s) registradas en total.`;
         renderAdminRows(downloads);
         adminSection.classList.remove('hidden');
+        adminSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (error) {
         adminSummary.textContent = 'No se pudieron cargar los datos del panel admin.';
         downloadsTable.innerHTML = '<tr><td class="muted" colspan="4">Error al consultar el historial.</td></tr>';
