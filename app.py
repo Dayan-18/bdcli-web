@@ -19,10 +19,22 @@ from urllib.parse import parse_qs, urlparse
 
 BASE_DIR = Path(__file__).resolve().parent
 INDEX_FILE = BASE_DIR / "index.html"
-EXE_FILE = BASE_DIR / "DBAdmin.exe"
 DB_FILE = BASE_DIR / "analytics.sqlite3"
 LOCK = threading.Lock()
 ADMIN_KEY = os.environ.get("DBADMIN_ADMIN_KEY", "upt-admin")
+
+
+def resolve_exe_file() -> Path | None:
+    candidates = [
+        BASE_DIR / "media" / "DBAdmin.exe",
+        BASE_DIR / "media" / "DB-CLI.exe",
+        BASE_DIR / "DBAdmin.exe",
+        BASE_DIR / "DB-CLI.exe",
+    ]
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
 
 
 def init_db() -> None:
@@ -97,10 +109,13 @@ class DBAdminHandler(BaseHTTPRequestHandler):
     def _record_download(self) -> int:
         ip = client_ip(self)
         user_agent = self.headers.get("User-Agent", "desconocido")
+        exe_file = resolve_exe_file()
+        if exe_file is None:
+            return 0
         with LOCK, get_db_connection() as conn:
             conn.execute(
                 "INSERT INTO downloads (ip, user_agent, downloaded_at, file_name) VALUES (?, ?, ?, ?)",
-                (ip, user_agent, now_iso(), EXE_FILE.name),
+                (ip, user_agent, now_iso(), exe_file.name),
             )
             conn.commit()
             row = conn.execute("SELECT COUNT(*) AS total FROM downloads").fetchone()
@@ -132,25 +147,35 @@ class DBAdminHandler(BaseHTTPRequestHandler):
             return
 
         if route == "/download":
-            if not EXE_FILE.exists():
+            exe_file = resolve_exe_file()
+            if exe_file is None:
                 self._send_json(
                     {
-                        "error": "No se encontro DBAdmin.exe dentro de media/.",
-                        "hint": "Coloca el ejecutable generado en media/DBAdmin.exe.",
+                        "error": "No se encontro ningun ejecutable descargable.",
+                        "hint": "Coloca DBAdmin.exe o DB-CLI.exe en media/ o en la raiz del proyecto.",
                     },
                     status=HTTPStatus.NOT_FOUND,
                 )
                 return
 
             total = self._record_download()
+            if total == 0:
+                self._send_json(
+                    {
+                        "error": "No se pudo registrar la descarga.",
+                        "hint": "Verifica que analytics.sqlite3 sea escribible.",
+                    },
+                    status=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+                return
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", "application/octet-stream")
-            self.send_header("Content-Disposition", f'attachment; filename="{EXE_FILE.name}"')
+            self.send_header("Content-Disposition", f'attachment; filename="{exe_file.name}"')
             self.send_header("X-DBAdmin-Downloads", str(total))
             self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Length", str(EXE_FILE.stat().st_size))
+            self.send_header("Content-Length", str(exe_file.stat().st_size))
             self.end_headers()
-            with EXE_FILE.open("rb") as file_handle:
+            with exe_file.open("rb") as file_handle:
                 self.wfile.write(file_handle.read())
             return
 
@@ -172,6 +197,16 @@ class DBAdminHandler(BaseHTTPRequestHandler):
         if route == "/logo-upt.png":
             self._serve_file(BASE_DIR / "logo-upt.png", "image/png")
             return
+
+        if route in {"/DBAdmin.exe", "/DB-CLI.exe"}:
+            exe_file = resolve_exe_file()
+            if exe_file and exe_file.name.lower() == route.lstrip("/").lower():
+                self._serve_file(exe_file)
+                return
+            fallback = BASE_DIR / ("DB-CLI.exe" if route == "/DBAdmin.exe" else "DBAdmin.exe")
+            if fallback.exists() and fallback.is_file():
+                self._serve_file(fallback)
+                return
 
         candidate = (BASE_DIR / route.lstrip("/")).resolve()
         if candidate.is_file() and str(candidate).startswith(str(BASE_DIR.resolve())):
