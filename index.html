@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#07111f" />
-  <title>DB-CLI Admin CLI | Descargas y Documentación</title>
+  <title>DBAdmin CLI | Descargas y Documentación</title>
   <style>
     :root {
       --bg: #06111f;
@@ -477,7 +477,7 @@
       <div class="brand">
         <img src="/logo-upt.png" alt="UPT" />
         <div>
-          <strong>DB-CLI Admin CLI</strong>
+          <strong>DBAdmin CLI</strong>
           <span>Documentación, descarga y panel admin</span>
         </div>
       </div>
@@ -495,7 +495,7 @@
             <div class="eyebrow">CLI profesional para bases de datos</div>
             <h1>Gestiona, migra y valida bases de datos desde una sola herramienta.</h1>
             <p class="lead">
-              DB-CLI Admin reúne administración relacional, soporte NoSQL, migración ETL y validación de backups en Docker.
+              DBAdmin reúne administración relacional, soporte NoSQL, migración ETL y validación de backups en Docker.
               Esta landing sirve como presentación, documentación y punto de descarga del ejecutable.
             </p>
             <div class="hero-actions">
@@ -549,7 +549,7 @@
         <div class="section-header">
           <div>
             <h2>Descargas</h2>
-            <p>El botón llama al backend local, incrementa el contador y entrega el ejecutable <strong>DB-CLI.exe</strong>.</p>
+            <p>El botón llama al backend local, incrementa el contador y entrega el ejecutable <strong>DBAdmin.exe</strong>.</p>
           </div>
         </div>
 
@@ -565,8 +565,8 @@
         </div>
 
         <div class="hero-actions" style="margin-top:18px;">
-          <a class="btn btn-primary" id="downloadBtn" href="/download">⬇ Descargar DB-CLI.exe</a>
-          <a class="btn btn-secondary" href="/DB-CLI.exe">Abrir archivo directo</a>
+          <a class="btn btn-primary" id="downloadBtn" href="/download">⬇ Descargar DBAdmin.exe</a>
+          <a class="btn btn-secondary" href="/download">Abrir archivo directo</a>
         </div>
       </section>
 
@@ -661,7 +661,7 @@
         </div>
 
         <div class="notice">
-          <strong>Acceso de administración:</strong>. Utilice la contraseña asignada.
+          Clave por defecto: <strong>upt-admin</strong>. Si definiste <strong>DBADMIN_ADMIN_KEY</strong> en Render, usa esa.
         </div>
       </section>
 
@@ -706,7 +706,7 @@
       </section>
     </main>
 
-    <div class="footer">DB-CLI Admin CLI | landing local para presentación, descargas y trazabilidad de accesos.</div>
+    <div class="footer">DBAdmin CLI | landing local para presentación, descargas y trazabilidad de accesos.</div>
   </div>
 
   <a class="floating-top" href="#inicio" title="Volver al inicio">↑</a>
@@ -720,7 +720,7 @@
     const downloadBtn = document.getElementById('downloadBtn');
     const unlockAdminBtn = document.getElementById('unlockAdminBtn');
     const adminKeyInput = document.getElementById('adminKey');
-    const ADMIN_STORAGE_KEY = 'DB-CLI Admin-admin-key';
+    const ADMIN_STORAGE_KEY = 'dbadmin-admin-key';
 
     let adminKey = localStorage.getItem(ADMIN_STORAGE_KEY) || '';
 
@@ -752,7 +752,7 @@
         const ip = item.ip || '-';
         const userAgent = item.user_agent || '-';
         const date = item.downloaded_at || '-';
-        const fileName = item.file_name || 'DB-CLI.exe';
+        const fileName = item.file_name || 'DBAdmin.exe';
         return `<tr><td>${date}</td><td>${ip}</td><td>${userAgent}</td><td>${fileName}</td></tr>`;
       }).join('');
     }
